@@ -64,6 +64,19 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "cmake build",
+            "type": "shell",
+            "command": "cmake -DCMAKE_BUILD_TYPE=DEBUG .. -G 'Visual Studio 17 2022'; cmake --build . --config Debug",
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "cmake build and run",
             "type": "shell",
             "command": "cmake -DCMAKE_BUILD_TYPE=DEBUG .. -G 'Visual Studio 17 2022'; cmake --build . --config Debug; cd ./src/Debug; ./practice.exe",
