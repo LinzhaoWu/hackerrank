@@ -24,7 +24,7 @@
             // Resolved by CMake Tools:
             "program": "${workspaceFolder}/build/src/Debug/practice.exe",
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [
                 {

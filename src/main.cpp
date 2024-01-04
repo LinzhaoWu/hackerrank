@@ -23,10 +23,11 @@ public:
 
     void AddAttribute(std::string_view sName, std::string_view sValue);
     std::string_view GetAttribute(std::string_view sName);
+    bool HasAttribute(std::string_view sName);
 
 private:
     std::string m_name;
-    std::vector<std::string_view> m_children;
+    std::vector<std::string> m_children;
     std::unordered_map<std::string, std::string> m_attributes;
 };
 
@@ -46,12 +47,17 @@ public:
     static void AddTag(std::string_view name);
 
 private:
-    inline static std::unordered_map<std::string, Tag> m_mapTags = {};
+    // inline static std::unordered_map<std::string, Tag> m_mapTags = {};
+    static std::unordered_map<std::string, Tag> m_mapTags;
 };
+
+std::unordered_map<std::string, Tag> TagRepository::m_mapTags;
 
 void Tag::AddChild(std::string_view nameChild)
 {
-    m_children.push_back(nameChild);
+    // m_children.push_back(std::string(nameChild));
+    auto name = std::string(nameChild);
+    m_children.push_back(name);
     TagRepository::AddTag(nameChild);
 }
 
@@ -81,6 +87,11 @@ std::string_view Tag::GetAttribute(std::string_view sName)
     return m_attributes.at(std::string(sName));
 }
 
+bool Tag::HasAttribute(std::string_view sName)
+{
+    return m_attributes.contains(std::string(sName));
+}
+
 enum class TagStatus {
     TAG_HEAD,
     TAG_TAIL
@@ -88,7 +99,10 @@ enum class TagStatus {
 
 TagStatus GetLineTag(std::string_view line, std::string& nameTag, std::size_t& posEnd)
 {
-    if (line.starts_with("<")) {
+    if (line.starts_with("</")) {
+        return TagStatus::TAG_TAIL;
+
+    } else if (line.starts_with("<")) {
         const auto pos = line.find(' ');
         if (std::string_view::npos != pos)
         {
@@ -96,9 +110,6 @@ TagStatus GetLineTag(std::string_view line, std::string& nameTag, std::size_t& p
             posEnd = pos;
         }
         return TagStatus::TAG_HEAD;
-
-    } else if (line.starts_with("</")) {
-        return TagStatus::TAG_TAIL;
     }
 
     std::cout << "Something is Wrong!" << std::endl;
@@ -115,46 +126,52 @@ void ReadAttributes(std::string_view svLine, Tag* pTagCurrent, std::size_t& posS
     const auto svKey = svLine.substr(posKeyStart, posKeyEnd - posKeyStart);
 
     const auto posValueStart = svLine.find_first_not_of(svDelimiters, posKeyEnd);
-    const auto posValueEnd = svLine.find_first_of(svDelimiters, posKeyStart);
+    const auto posValueEnd = svLine.find_first_of(svDelimiters, posValueStart);
     const auto svValue = svLine.substr(posValueStart, posValueEnd - posValueStart);
 
     pTagCurrent->AddAttribute(svKey, svValue);
-    posStart = posValueEnd;
+    posStart = svLine.find_first_not_of(svDelimiters, posValueEnd);
 }
 
-uint32_t AnalyseQuery(Tag& tagRoot, std::string_view svLine)
+uint32_t AnalyseQuery(Tag* tagRoot, std::string_view svLine)
 {
     const std::string_view svDelimiters = ".~";
     const auto svTagConnector = '.';
     const auto svAttrConnector = '~';
 
     std::size_t posStart = 0;
-    Tag* pTagCurrent = &tagRoot;
+    Tag* pTagCurrent = tagRoot;
+    constexpr std::string_view NOT_FOUND = "Not Found!";
 
-    for (std::size_t posEnd = svLine.find_first_of(svDelimiters, posStart); 
-         posEnd != std::string_view::npos; 
-         posStart = posEnd) {
+    std::size_t posEnd = svLine.find_first_of(svDelimiters, posStart);
+    while (posEnd != std::string_view::npos) {
         const auto svTagName = svLine.substr(posStart, posEnd - posStart);
         pTagCurrent = pTagCurrent->GetChild(svTagName);
         if (pTagCurrent == nullptr) {
-            std::cout << "Not Found!" << std::endl;
+            std::cout << NOT_FOUND << std::endl;
             return 1;
         }
 
+        posStart = posEnd + 1;
         posEnd = svLine.find_first_of(svDelimiters, posStart);
     }
 
     const std::string_view svAttr = svLine.substr(posStart, svLine.size() - posStart);
-    std::cout << pTagCurrent->GetAttribute(svAttr) << std::endl;
+    if (pTagCurrent->HasAttribute(svAttr)) {
+        std::cout << pTagCurrent->GetAttribute(svAttr) << std::endl;
+    } else {
+        std::cout << NOT_FOUND << std::endl;
+    }
     return 0;
 }
 
 #define TEST
 #ifdef TEST
-std::string TEST_INPUT = "4 3\n<tag1 value = \"HelloWorld\">\n <tag2 name = \"Name1\">\n </tag2>\n </tag1>\n tag1.tag2~name\n tag1~name\n tag1~value";
+std::string TEST_INPUT = "4 3\n<tag1 value = \"HelloWorld\">\n<tag2 name = \"Name1\">\n</tag2>\n</tag1>\ntag1.tag2~name\ntag1~name\ntag1~value";
 #endif
 
-int main() {
+int main() 
+{
     #ifdef TEST
     std::istringstream iss(TEST_INPUT);
     #endif
@@ -171,9 +188,11 @@ int main() {
         return -1;
     }
 
-    Tag root("root");
+    const std::string_view ROOT_NAME = "root"; 
+    TagRepository::AddTag(ROOT_NAME);
+
     std::stack<std::string> stackTagNames;
-    stackTagNames.push(std::string(root.GetName()));
+    stackTagNames.push(std::string(ROOT_NAME));
 
     for (uint32_t i(0); i < nAttribute; i++) {
         #ifdef TEST
@@ -190,7 +209,7 @@ int main() {
             stackTagNames.push(sTag);
 
             const auto pTagCurrent = TagRepository::GetTag(sTag);
-            while (std::string_view::npos != pos) {
+            while ('>' != sLine[pos]) {
                 ReadAttributes(sLine, pTagCurrent, pos);
             }
         } else {
@@ -198,18 +217,19 @@ int main() {
         }
     }
 
-    if (!stackTagNames.empty()) {
+    if (1 != stackTagNames.size()) {
         std::cout << "Something is wrong!";
         return -1;
     }
 
+    const auto pRoot = TagRepository::GetTag(ROOT_NAME);
     for (uint32_t i(0); i < nQuery; i++) {
         #ifdef TEST
         std::getline(iss, sLine);
         #else
         std::getline(std::cin, sLine);
         #endif
-        AnalyseQuery(root, sLine);
+        AnalyseQuery(pRoot, sLine);
     }
 
     return 0;
@@ -225,7 +245,13 @@ Tag *TagRepository::GetTag(std::string_view svName)
     return &m_mapTags.at(sName);
 }
 
-void TagRepository::AddTag(std::string_view name)
+void TagRepository::AddTag(std::string_view svName)
 {
-    m_mapTags.emplace(std::string(name), std::string(name));
+    // m_mapTags.emplace(std::string(sName), std::string(sName));
+
+    auto sName = std::string(svName);
+    // m_mapTags.emplace(sName, sName);
+
+    auto tag = Tag(sName);
+    m_mapTags.emplace(sName, tag);
 }
