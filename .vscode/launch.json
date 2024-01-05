@@ -34,7 +34,7 @@
                     "value": "$PATH:${workspaceFolder}/build/src/Debug/"
                 }
             ],
-            "externalConsole": true,
+            "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [
                 {
