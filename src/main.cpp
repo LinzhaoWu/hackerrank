@@ -103,7 +103,7 @@ TagStatus GetLineTag(std::string_view line, std::string& nameTag, std::size_t& p
         return TagStatus::TAG_TAIL;
 
     } else if (line.starts_with("<")) {
-        const auto pos = line.find(' ');
+        const auto pos = line.find_first_of(" >");
         if (std::string_view::npos != pos)
         {
             nameTag = line.substr(1, pos - 1);
@@ -167,7 +167,8 @@ uint32_t AnalyseQuery(Tag* tagRoot, std::string_view svLine)
 
 #define TEST
 #ifdef TEST
-std::string TEST_INPUT = "4 3\n<tag1 value = \"HelloWorld\">\n<tag2 name = \"Name1\">\n</tag2>\n</tag1>\ntag1.tag2~name\ntag1~name\ntag1~value";
+std::string TEST_INPUT_0 = "4 3\n<tag1 value = \"HelloWorld\">\n<tag2 name = \"Name1\">\n</tag2>\n</tag1>\ntag1.tag2~name\ntag1~name\ntag1~value";
+std::string TEST_INPUT = "6 4\n<a>\n<b name = \"tag_one\">\n<c name = \"tag_two\" value = \"val_907\">\n</c>\n</b>\n</a>\na.b~name\na.b.c~value\na.b.c~src\na.b.c.d~name";
 #endif
 
 int main() 
@@ -201,7 +202,7 @@ int main()
         std::getline(std::cin, sLine);
         #endif
         std::string sTag;
-        std::size_t pos;
+        std::size_t pos = std::string_view::npos;
 
         if (TagStatus::TAG_HEAD == GetLineTag(sLine, sTag, pos)) {
             const auto pTagParent = TagRepository::GetTag(stackTagNames.top());
@@ -209,7 +210,7 @@ int main()
             stackTagNames.push(sTag);
 
             const auto pTagCurrent = TagRepository::GetTag(sTag);
-            while ('>' != sLine[pos]) {
+            while (pos < sLine.size() && '>' != sLine.at(pos)) {
                 ReadAttributes(sLine, pTagCurrent, pos);
             }
         } else {
