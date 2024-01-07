@@ -46,7 +46,8 @@ int main() {
 
 #define TEST
 
-#if 0
+// #define TIME_MEASUREMENT
+#ifdef TIME_MEASUREMENT
 auto start = high_resolution_clock::now();
 auto stop = high_resolution_clock::now();
 auto a = stop - stop;
@@ -106,16 +107,24 @@ int main() {
         
         // For each line, get elements
         const auto svDelimiter = " ";
-        // start = high_resolution_clock::now();
+        #ifdef TIME_MEASUREMENT
+        start = high_resolution_clock::now();
+        #endif
         auto token = std::strtok(sLine.data(), svDelimiter);
-        // stop = high_resolution_clock::now();
-        // a += stop - start;
+        #ifdef TIME_MEASUREMENT
+        stop = high_resolution_clock::now();
+        a += stop - start;
+        #endif
 
         while (token) {
-            // start = high_resolution_clock::now();
+            #ifdef TIME_MEASUREMENT
+            start = high_resolution_clock::now();
+            #endif
             const uint32_t uElement = std::stoi(std::string(token));
-            // stop = high_resolution_clock::now();
-            // b += stop - start;
+            #ifdef TIME_MEASUREMENT
+            stop = high_resolution_clock::now();
+            b += stop - start;
+            #endif
 
             setSubArr.insert(uElement);
             dqSubArr.push_back(uElement);
@@ -127,17 +136,25 @@ int main() {
                 dqSubArr.pop_front();
             } 
 
-            // start = high_resolution_clock::now();
+            #ifdef TIME_MEASUREMENT
+            start = high_resolution_clock::now();
+            #endif
+
             token = std::strtok(nullptr, svDelimiter);
-            // stop = high_resolution_clock::now();
-            // c += stop - start;
+
+            #ifdef TIME_MEASUREMENT
+            stop = high_resolution_clock::now();
+            c += stop - start;
+            #endif
         }
         std::cout << std::endl;
     }
 
+    #ifdef TIME_MEASUREMENT
     std::cout << "A:" << duration_cast<microseconds>(a).count() << std::endl;
     std::cout << "B:" << duration_cast<microseconds>(b).count() << std::endl;
     std::cout << "C:" << duration_cast<microseconds>(c).count() << std::endl;
+    #endif
 
     return 0;
 }
@@ -180,6 +197,7 @@ int main() {
         #else
         std::getline(std::cin, sLine);
         #endif
+
         uint32_t nElements, nSubStrings;
         if (2 != sscanf_s(sLine.c_str(), "%d %d", &nElements, &nSubStrings)) {
             return -1;
@@ -199,16 +217,30 @@ int main() {
         std::size_t posStart = 0;
         while (svLine.at(posStart) == svDelimiter) posStart++;
 
-        // start = high_resolution_clock::now();
+        #ifdef TIME_MEASUREMENT
+        start = high_resolution_clock::now();
+        #endif
+
         std::size_t posEnd = svLine.find(svDelimiter, posStart);
-        // stop = high_resolution_clock::now();
-        // a += stop - start;
+
+        #ifdef TIME_MEASUREMENT
+        stop = high_resolution_clock::now();
+        a += stop - start;
+        #endif
+
         while (posEnd != std::string_view::npos) {
-            // start = high_resolution_clock::now();
+
+            #ifdef TIME_MEASUREMENT
+            start = high_resolution_clock::now();
+            #endif
+
             const auto svElement = svLine.substr(posStart, posEnd - posStart);
             const uint32_t uElement = std::stoi(std::string(svElement));
-            // stop = high_resolution_clock::now();
-            // b += stop - start;
+
+            #ifdef TIME_MEASUREMENT
+            stop = high_resolution_clock::now();
+            b += stop - start;
+            #endif
 
             ProcessElement(uElement, nSubStrings);
 
@@ -216,10 +248,17 @@ int main() {
             posEnd = svLine.find_first_of(svDelimiter, posStart);
         }
 
-        // start = high_resolution_clock::now();
+        #ifdef TIME_MEASUREMENT
+        start = high_resolution_clock::now();
+        #endif
+
         const auto svElement = svLine.substr(posStart, svLine.size() - posStart);
-        // stop = high_resolution_clock::now();
-        // c += stop - start;
+
+        #ifdef TIME_MEASUREMENT
+        stop = high_resolution_clock::now();
+        c += stop - start;
+        #endif
+
         if (!svElement.empty()) {
             const uint32_t uElement = std::stoi(std::string(svElement));
             ProcessElement(uElement, nSubStrings);
@@ -231,9 +270,11 @@ int main() {
         dqSubArr.clear();
     }
 
-    // std::cout << "A:" << duration_cast<microseconds>(a).count() << std::endl;
-    // std::cout << "B:" << duration_cast<microseconds>(b).count() << std::endl;
-    // std::cout << "C:" << duration_cast<microseconds>(c).count() << std::endl;
+    #ifdef TIME_MEASUREMENT
+    std::cout << "A:" << duration_cast<microseconds>(a).count() << std::endl;
+    std::cout << "B:" << duration_cast<microseconds>(b).count() << std::endl;
+    std::cout << "C:" << duration_cast<microseconds>(c).count() << std::endl;
+    #endif
 
     return 0;
 }
