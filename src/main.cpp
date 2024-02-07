@@ -13,135 +13,145 @@
 
 #include <deque>
 
-class Message
+using MatrixData = std::vector<std::vector<int>>;
+
+class Matrix 
 {
 public:
-    Message(std::string_view svMessage, int32_t uIndex);
+    Matrix(uint32_t rows, uint32_t columns);
 
-    const std::string& get_text();
-    void print();
+    Matrix(const Matrix& m) = delete;
+    Matrix& operator=(const Matrix& m) = delete;
 
-    bool operator<(const Message& other);
+    Matrix(Matrix&& m);
+    Matrix operator+(const Matrix& m);
+    Matrix& operator=(Matrix&& m);
 
-private:
-    std::string sMessage_m;
-    int32_t uIndex_m;
-};
+    void read_string(std::string_view input_line, uint32_t row_len, uint32_t max_row);
+    void print_matrix(void);
 
-Message::Message(std::string_view svMessage, int32_t uIndex)
-: sMessage_m(svMessage)
-, uIndex_m(uIndex)
-{
-}
+    uint32_t get_rows(void);
+    uint32_t get_columns(void);
 
-const std::string &Message::get_text()
-{
-    return sMessage_m;
-}
-
-void Message::print()
-{
-    std::cout << sMessage_m << std::endl;
-}
-
-bool Message::operator<(const Message &other)
-{
-    return uIndex_m < other.uIndex_m;
-}
-
-class MessageFactory
-{
-public:
-    static std::unique_ptr<Message> create_message(std::string_view text);
-    // static Message create_message(const std::string& text);
+    void operator+=(const Matrix& other);
 
 private:
-    inline static size_t uMessageCounter = 0;
+    std::unique_ptr<MatrixData> m_upData;
 };
 
-std::unique_ptr<Message> MessageFactory::create_message(std::string_view text)
+Matrix::Matrix(uint32_t rows, uint32_t columns)
+:m_upData(std::make_unique<MatrixData>(rows, std::vector<int>(columns)))
 {
-    uMessageCounter++;
-    return std::make_unique<Message>(std::string(text), uMessageCounter);
+    // std::cout << "consturctor operator\r\n";
 }
 
-// Message MessageFactory::create_message(const std::string &text)
-// {
-//     uMessageCounter++;
-//     return Message(text, uMessageCounter);
-// }
-
-class Recipient
+void Matrix::read_string(std::string_view input_line, uint32_t row_len, uint32_t max_row)
 {
-public:
-    // void receive(const Message& message);
-    void receive(std::unique_ptr<Message>&& message);
+    if (input_line.size() == 0) {
+        return;
+    }
 
-    void print_messages();
+    std::string_view digits = "0123456789";
+    uint32_t cursor(0), non_digit(0);
+    uint32_t row_number(0);
+    // Last character of input_line is RETURN key
+    while (row_number < max_row) {
+        for (uint32_t i(0); i < row_len; i++) {
+            cursor = input_line.find_first_of(digits, cursor);
+            non_digit = input_line.find_first_not_of(digits, cursor);
 
-private:
-    void fix_order();
-
-    std::vector<std::unique_ptr<Message>> vMessages;
-    // std::vector<Message> vMessages;
-};
-
-void Recipient::receive(std::unique_ptr<Message>&& message)
-{
-    vMessages.push_back(std::move(message));
-}
-
-void Recipient::print_messages()
-{
-    fix_order();
-
-    for (const auto& pMessage : vMessages) {
-        pMessage->print();
+            std::string_view str_num = input_line.substr(cursor, non_digit - cursor);
+            m_upData->at(row_number)[i] = std::stoi(str_num.data());
+            cursor = non_digit;
+        }
+        row_number++;
     }
 }
 
-void Recipient::fix_order()
+void Matrix::print_matrix(void)
 {
-    std::sort(vMessages.begin(), vMessages.end(), 
-        [](std::unique_ptr<Message>& upA, std::unique_ptr<Message>& upB) -> bool {
-                return *upA < *upB;
+    for (uint32_t i(0); i < m_upData->size(); i++) {
+        for (uint32_t j(0); j < m_upData->front().size(); j++) {
+            std::cout << std::to_string(m_upData->at(i)[j]) << " ";
         }
-    );
+        std::cout << std::endl;
+    }
 }
 
-class Network
+void Matrix::operator+=(const Matrix& other)
 {
-public:
-    void Add(std::unique_ptr<Message>&& upMessage);
-    void SendTo(Recipient& recipent);
+    for (uint32_t i(0); i < m_upData->size(); i++) {
+        for (uint32_t j(0); j < m_upData->front().size(); j++) {
+            m_upData->at(i)[j] += other.m_upData->at(i)[j];
+        }
+    }
+}
 
-private:
-    std::unordered_set<std::unique_ptr<Message>> usMessages;
-};
 
 int main()
 {
-    Network network;
+    uint32_t test_cases;
+    std::cin >> test_cases;
+
+    uint32_t nRows, nColumns;
     std::string sLine;
-    for (std::getline(std::cin, sLine); !sLine.empty(); std::getline(std::cin, sLine)) {
-        network.Add(MessageFactory::create_message(sLine));
-    }
+    for (uint32_t i(0); i < test_cases; i++) {
+        std::cin >> nRows >> nColumns;
+        std::cin.ignore();
 
-    Recipient recipient;
-    network.SendTo(recipient);
+        Matrix mtxA(nRows, nColumns);
+        Matrix mtxB(nRows, nColumns);
+        // Matrix mtxC(nRows, nColumns);
 
-    recipient.print_messages();
-}
+        while (sLine.size() == 0) std::getline(std::cin, sLine);
+        mtxA.read_string(sLine, nColumns, nRows);
+        std::getline(std::cin, sLine);
+        mtxB.read_string(sLine, nColumns, nRows);
 
-void Network::Add(std::unique_ptr<Message>&& upMessage)
-{
-    usMessages.insert(std::move(upMessage));
-}
-
-void Network::SendTo(Recipient &recipent)
-{
-    for (auto it = usMessages.begin(); it != usMessages.end();) {
-        recipent.receive(std::move(usMessages.extract(it++).value()));
+        Matrix mtxC = mtxA + mtxB;
+        // mtxC = mtxA + mtxB;
+        mtxC.print_matrix();
+        sLine.clear();
     }
 }
 
+Matrix::Matrix(Matrix &&m)
+: m_upData(std::move(m.m_upData))
+{
+    // std::cout << "move consturctor operator\r\n";
+}
+
+// !!!!!!!!!!!!
+// CANNOT BE Matrix&& Matrix::operator+(const Matrix &other)
+// Will cause problem from the local variable returned
+Matrix Matrix::operator+(const Matrix &other)
+{
+    Matrix mtxRet(get_rows(), get_columns());
+
+    for (uint32_t i(0); i < get_rows(); i++) {
+        for (uint32_t j(0); j < get_columns(); j++) {
+            mtxRet.m_upData->at(i)[j] = m_upData->at(i)[j] + other.m_upData->at(i)[j];
+        }
+    }
+    return mtxRet;
+}
+
+Matrix &Matrix::operator=(Matrix &&m)
+{
+    if (&m == this) return *this;
+
+    // std::cout << "move assignment operator\r\n";
+
+    m_upData = std::move(m.m_upData);
+    return *this;
+}
+
+uint32_t Matrix::get_rows(void)
+{
+    return m_upData->size();
+}
+
+uint32_t Matrix::get_columns(void)
+{
+    return m_upData->front().size();
+}

@@ -13,6 +13,8 @@
 
 #include <deque>
 
+using MatrixData = std::vector<std::vector<int>>;
+
 class Matrix 
 {
 public:
@@ -22,21 +24,25 @@ public:
     Matrix& operator=(const Matrix& m) = delete;
 
     Matrix(Matrix&& m);
-    Matrix& operator+(const Matrix& m);
+    Matrix operator+(const Matrix& m);
     Matrix& operator=(Matrix&& m);
 
     void read_string(std::string_view input_line, uint32_t row_len, uint32_t max_row);
     void print_matrix(void);
 
+    uint32_t get_rows(void);
+    uint32_t get_columns(void);
+
     void operator+=(const Matrix& other);
 
 private:
-    std::vector<std::vector<int>> m_data;
+    std::unique_ptr<MatrixData> m_upData;
 };
 
 Matrix::Matrix(uint32_t rows, uint32_t columns)
-:m_data(rows, std::vector<int>(columns))
+:m_upData(std::make_unique<MatrixData>(rows, std::vector<int>(columns)))
 {
+    // std::cout << "consturctor operator\r\n";
 }
 
 void Matrix::read_string(std::string_view input_line, uint32_t row_len, uint32_t max_row)
@@ -55,7 +61,7 @@ void Matrix::read_string(std::string_view input_line, uint32_t row_len, uint32_t
             non_digit = input_line.find_first_not_of(digits, cursor);
 
             std::string_view str_num = input_line.substr(cursor, non_digit - cursor);
-            m_data[row_number][i] = std::stoi(str_num.data());
+            m_upData->at(row_number)[i] = std::stoi(str_num.data());
             cursor = non_digit;
         }
         row_number++;
@@ -64,9 +70,9 @@ void Matrix::read_string(std::string_view input_line, uint32_t row_len, uint32_t
 
 void Matrix::print_matrix(void)
 {
-    for (uint32_t i(0); i < m_data.size(); i++) {
-        for (uint32_t j(0); j < m_data.front().size(); j++) {
-            std::cout << std::to_string(m_data[i][j]) << " ";
+    for (uint32_t i(0); i < m_upData->size(); i++) {
+        for (uint32_t j(0); j < m_upData->front().size(); j++) {
+            std::cout << std::to_string(m_upData->at(i)[j]) << " ";
         }
         std::cout << std::endl;
     }
@@ -74,9 +80,9 @@ void Matrix::print_matrix(void)
 
 void Matrix::operator+=(const Matrix& other)
 {
-    for (uint32_t i(0); i < m_data.size(); i++) {
-        for (uint32_t j(0); j < m_data.front().size(); j++) {
-            m_data[i][j] += other.m_data[i][j];
+    for (uint32_t i(0); i < m_upData->size(); i++) {
+        for (uint32_t j(0); j < m_upData->front().size(); j++) {
+            m_upData->at(i)[j] += other.m_upData->at(i)[j];
         }
     }
 }
@@ -95,14 +101,57 @@ int main()
 
         Matrix mtxA(nRows, nColumns);
         Matrix mtxB(nRows, nColumns);
+        // Matrix mtxC(nRows, nColumns);
 
         while (sLine.size() == 0) std::getline(std::cin, sLine);
         mtxA.read_string(sLine, nColumns, nRows);
         std::getline(std::cin, sLine);
         mtxB.read_string(sLine, nColumns, nRows);
 
-        mtxA += mtxB;
-        mtxA.print_matrix();
+        Matrix mtxC = mtxA + mtxB;
+        // mtxC = mtxA + mtxB;
+        mtxC.print_matrix();
         sLine.clear();
     }
+}
+
+Matrix::Matrix(Matrix &&m)
+: m_upData(std::move(m.m_upData))
+{
+    // std::cout << "move consturctor operator\r\n";
+}
+
+// !!!!!!!!!!!!
+// CANNOT BE Matrix&& Matrix::operator+(const Matrix &other)
+// Will cause problem from the local variable returned
+Matrix Matrix::operator+(const Matrix &other)
+{
+    Matrix mtxRet(get_rows(), get_columns());
+
+    for (uint32_t i(0); i < get_rows(); i++) {
+        for (uint32_t j(0); j < get_columns(); j++) {
+            mtxRet.m_upData->at(i)[j] = m_upData->at(i)[j] + other.m_upData->at(i)[j];
+        }
+    }
+    return mtxRet;
+}
+
+Matrix &Matrix::operator=(Matrix &&m)
+{
+    if (&m == this) return *this;
+
+    // std::cout << "move assignment operator\r\n";
+
+    m_upData = std::move(m.m_upData);
+    return *this;
+}
+
+uint32_t Matrix::get_rows(void)
+{
+    return m_upData->size();
+}
+
+uint32_t Matrix::get_columns(void)
+{
+    return m_upData->front().size();
 }
