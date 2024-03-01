@@ -4,7 +4,9 @@ project(cmake-project-practice)
 
 set(CMAKE_CXX_STANDARD 20)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 /O2")
+if (WIN32)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zi")
+endif (WIN32)
 
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
