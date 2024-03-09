@@ -8,6 +8,7 @@
             "type": "shell",
             "windows": { "command": "cmake -DCMAKE_BUILD_TYPE=DEBUG .. -G 'Visual Studio 17 2022'; cmake --build . --config Debug" },
             "linux": { "command": "cmake -DCMAKE_BUILD_TYPE=DEBUG ..; cmake --build . --config Debug" },
+            "osx": { "command": "cmake -DCMAKE_BUILD_TYPE=DEBUG ..; cmake --build . --config Debug" },
             "options": {
                 "cwd": "${workspaceFolder}/build"
             },
@@ -22,6 +23,7 @@
             "type": "shell",
             "windows": { "command": "cmake -DCMAKE_BUILD_TYPE=DEBUG .. -G 'Visual Studio 17 2022'; cmake --build . --config Debug; cd ./src/Debug; ./practice.exe" },
             "linux": { "command": "cmake -DCMAKE_BUILD_TYPE=DEBUG ..; cmake --build . --config Debug; cd ./src/; ./practice" },
+            "osx": { "command": "cmake -DCMAKE_BUILD_TYPE=DEBUG ..; cmake --build . --config Debug; cd ./src/; ./practice" },
             "options": {
                 "cwd": "${workspaceFolder}/build"
             },
@@ -36,6 +38,7 @@
             "type": "shell",
             "windows": { "command": "cmake --build . --target clean" },
             "linux": { "command": "cmake --build . --target clean" },
+            "osx": { "command": "cmake --build . --target clean" },
             "options": {
                 "cwd": "${workspaceFolder}/build"
             },
@@ -50,6 +53,7 @@
             "type": "shell",
             "windows": { "command": "rm * -Recurse" },
             "linux": { "command": "rm * -rf" },
+            "osx": { "command": "rm * -rf" },
             "options": {
                 "cwd": "${workspaceFolder}/build"
             },
