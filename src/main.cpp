@@ -9,7 +9,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
-#include <deque>
+#include <queue>
 #include <iostream>
 #include <vector>
 #include <functional>
@@ -24,74 +24,79 @@ string rtrim(const string &);
 vector<string> split(const string &);
 
 /*
- * Complete the 'queensAttack' function below.
+ * Complete the 'twoPluses' function below.
  *
  * The function is expected to return an INTEGER.
- * The function accepts following parameters:
- *  1. INTEGER n
- *  2. INTEGER k
- *  3. INTEGER r_q
- *  4. INTEGER c_q
- *  5. 2D_INTEGER_ARRAY obstacles
+ * The function accepts STRING_ARRAY grid as parameter.
  */
 
-int queensAttack(int n, int k, int r_q, int c_q, vector<vector<int>> obstacles) {
-    auto GetDistance = [r_q, c_q](int r, int c) -> int {
-        if (c_q == c) return abs(r_q - r);
-        else if (r_q == r) return abs(c_q - c);
-        else return min(abs(r_q - r), abs(c_q - c));
+int twoPluses(vector<string> grid) {
+    pair<int, int> prLens{0, 0};
+
+    auto AddLen = [&prLens](int len){
+        if (len > prLens.first && len > prLens.second) {
+            prLens.second = prLens.first; 
+            prLens.first = len;
+        } else if (len <= prLens.first && len > prLens.second) {
+            prLens.second = len;
+        }
     };
 
-    const int MAXN = GetDistance(1, c_q);
-    const int MAXS = GetDistance(n, c_q);
-    const int MAXE = GetDistance(r_q, n);
-    const int MAXW = GetDistance(r_q, 1);
-    const int MAXNW = min(MAXN, MAXW);
-    const int MAXSW = min(MAXS, MAXW);
-    const int MAXNE = min(MAXN, MAXE);
-    const int MAXSE = min(MAXS, MAXE);
+    #define INSIDE_LOOP(r, c)   {                   \
+                if (grid[r][c] == 'G') iCurDis++;\
+                else break;                         \
+    }
 
-    int ret(0);
-    int minN = MAXN;
-    int minS = MAXS;
-    int minE = MAXE;
-    int minW = MAXW;
-    int minNE = MAXNE;
-    int minNW = MAXNW;
-    int minSE = MAXSE;
-    int minSW = MAXSW;
+    #define AFTER_LOOP() {                          \
+            if (iCurDis == 1) {                     \
+                AddLen(1);                          \
+                continue;                           \
+            }                                       \
+            iMaxDis = min(iMaxDis, iCurDis);        \
+                                                    \
+            iCurDis = 1;                            \
+    }
 
-    for (const auto& ob : obstacles) {
-        const int dis = GetDistance(ob[0], ob[1]) - 1;
-        if (ob[0] == r_q) {
-            if (ob[1] > c_q) {
-                minE = min(minE, dis);
-            } else {
-                minW = min(minW, dis);
+    const int iRowSize = static_cast<int>(grid.size());
+    const int iColSize = static_cast<int>(grid.front().size());
+
+    for (int iRow(0); iRow < iRowSize; iRow++) {
+        for (int iCol(0); iCol < iColSize; iCol++) {
+            if (grid[iRow][iCol] != 'G') continue;
+
+            int iMaxDis = min(min(iRow, iRowSize - 1 - iRow), min(iCol, iColSize - 1 - iCol)) + 1;
+            int iCurDis = iMaxDis;
+            AFTER_LOOP();
+
+            for (int r(iRow - 1); r > iRow - iMaxDis; r--) { // Up
+                INSIDE_LOOP(r, iCol);
             }
-        } else if (ob[1] == c_q) {
-            if (ob[0] > r_q) {
-                minS = min(minS, dis);
-            } else {
-                minN = min(minN, dis);
+            AFTER_LOOP();
+
+            for (int r(iRow + 1); r < iRow + iMaxDis; r++) { // Down
+                INSIDE_LOOP(r, iCol);
             }
-        } else if (abs(r_q - ob[0]) == abs(c_q - ob[1])) {
-            if (r_q - ob[0] > 0 && c_q - ob[1] > 0) { 
-                minNW = min(minNW, dis);
-            } else if (r_q - ob[0] > 0 && c_q - ob[1] < 0) {
-                minNE = min(minNE, dis);
-            } else if (r_q - ob[0] < 0 && c_q - ob[1] < 0) {
-                minSE = min(minSE, dis);
-            } else if (r_q - ob[0] < 0 && c_q - ob[1] > 0) {
-                minSW = min(minSW, dis);
-            } 
+            AFTER_LOOP();
+
+            for (int c(iCol - 1); c > iCol - iMaxDis; c--) { // Left
+                INSIDE_LOOP(iRow, c);
+            }
+            AFTER_LOOP();
+
+            for (int c(iCol + 1); c < iCol + iMaxDis; c++) { // Right
+                INSIDE_LOOP(iRow, c);
+            }
+            AFTER_LOOP();
+
+            AddLen(iMaxDis);
         }
     }
-    return minN + minS + minE + minW + minNE + minNW + minSE + minSW;
+    return (prLens.first * 4 - 3) * (prLens.second * 4 - 3);
 }
 
 int main()
 {
+    // freopen("output.txt", "w", stdout);
     string first_multiple_input_temp;
     getline(cin, first_multiple_input_temp);
 
@@ -99,35 +104,18 @@ int main()
 
     int n = stoi(first_multiple_input[0]);
 
-    int k = stoi(first_multiple_input[1]);
+    int m = stoi(first_multiple_input[1]);
 
-    string second_multiple_input_temp;
-    getline(cin, second_multiple_input_temp);
+    vector<string> grid(n);
 
-    vector<string> second_multiple_input = split(rtrim(second_multiple_input_temp));
+    for (int i = 0; i < n; i++) {
+        string grid_item;
+        getline(cin, grid_item);
 
-    int r_q = stoi(second_multiple_input[0]);
-
-    int c_q = stoi(second_multiple_input[1]);
-
-    vector<vector<int>> obstacles(k);
-
-    for (int i = 0; i < k; i++) {
-        obstacles[i].resize(2);
-
-        string obstacles_row_temp_temp;
-        getline(cin, obstacles_row_temp_temp);
-
-        vector<string> obstacles_row_temp = split(rtrim(obstacles_row_temp_temp));
-
-        for (int j = 0; j < 2; j++) {
-            int obstacles_row_item = stoi(obstacles_row_temp[j]);
-
-            obstacles[i][j] = obstacles_row_item;
-        }
+        grid[i] = grid_item;
     }
 
-    int result = queensAttack(n, k, r_q, c_q, obstacles);
+    int result = twoPluses(grid);
 
     cout << result << "\n";
 
