@@ -8,7 +8,6 @@
 #include <deque>
 #include <cstring>
 #include <string>
-#include <iostream>
 #include <queue>
 #include <iostream>
 #include <vector>
@@ -23,16 +22,17 @@ using namespace std;
 
 #ifdef OHTERS_1
 int n, m;
-char s[20][20];
+#define MAX_LEN 15
+char s[MAX_LEN+2][MAX_LEN+2];
 int main() {
     ios_base::sync_with_stdio(0);
     cin >> n >> m;
-    for (int i=1; i<=n; i++) cin >> &s[i][1];
+    for (int i=1; i<=n; i++) cin >> *reinterpret_cast<char(*)[17]>(&s[i][1]);
     int res = 0;
     for (int i=1; i<=n; i++) {
         for (int j=1; j<=m; j++) {
             int len = 0;
-            for (len=0; len<15; len++) {
+            for (len=0; len<MAX_LEN; len++) {
                 if (s[i+len][j] != 'G' || s[i-len][j] != 'G' || s[i][j-len] != 'G' || s[i][j+len] != 'G') break;
                 s[i+len][j] = s[i-len][j] = s[i][j-len] = s[i][j+len] = 'T';
                 int area1 = 4*len+1;
