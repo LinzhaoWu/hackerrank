@@ -23,68 +23,56 @@ string rtrim(const string &);
 vector<string> split(const string &);
 
 /*
- * Complete the 'almostSorted' function below.
+ * Complete the 'matrixRotation' function below.
  *
- * The function accepts INTEGER_ARRAY arr as parameter.
+ * The function accepts following parameters:
+ *  1. 2D_INTEGER_ARRAY matrix
+ *  2. INTEGER r
  */
 
-void almostSorted(vector<int> arr) 
-{
-    auto vSorted = arr;
-    sort(vSorted.begin(), vSorted.end());
+void matrixRotation(vector<vector<int>> matrix, int r) {
+    const int n = matrix.front().size();
+    const int m = matrix.size();
+    const int iMaxLists = min(m, n) / 2 + min(m, n) % 2;
 
-    vector<int> vIndex;
-    for (int32_t i(0); i < (int32_t)vSorted.size(); i++) {
-        if (vSorted[i] != arr[i]) vIndex.push_back(i);
-    }
-
-    if (vIndex.size() == 0) {
-        cout << "yes\n";
-
-    } else if (vIndex.size() == 1) {
-        cout << "no\n";
-
-    } else if (vIndex.size() == 2) {
-        cout << "yes\nswap " << vIndex.front() + 1 << " " << vIndex.back() + 1 << "\n";
-
-    } else {
-        for (int32_t i(1); i < (int32_t)vIndex.size(); i++) {
-            if (vIndex[i] != vIndex[i - 1] + 1) {
-                cout << "no\r\n";
-                return;
-            }
-        }
-        for (int32_t i(1); i < (int32_t)vIndex.size(); i++) {
-            if (arr[vIndex[i - 1]] < arr[vIndex[i]]) {
-                cout << "no\r\n";
-                return;
-            }
-        }
-        cout << "yes\nreverse " << vIndex.front() + 1 << " " << vIndex.back() + 1 << "\n";
+    vector<list<int, int>> vLists(iMaxLists);
+    for (int iList(0); iList < iMaxLists; iList++) {
+        auto& curList = vLists[iList];
+        curList.push_back()
     }
 }
 
 int main()
 {
-    string n_temp;
-    getline(cin, n_temp);
+    string first_multiple_input_temp;
+    getline(cin, first_multiple_input_temp);
 
-    int n = stoi(ltrim(rtrim(n_temp)));
+    vector<string> first_multiple_input = split(rtrim(first_multiple_input_temp));
 
-    string arr_temp_temp;
-    getline(cin, arr_temp_temp);
+    int m = stoi(first_multiple_input[0]);
 
-    vector<string> arr_temp = split(rtrim(arr_temp_temp));
+    int n = stoi(first_multiple_input[1]);
 
-    vector<int> arr(n);
+    int r = stoi(first_multiple_input[2]);
 
-    for (int i = 0; i < n; i++) {
-        int arr_item = stoi(arr_temp[i]);
+    vector<vector<int>> matrix(m);
 
-        arr[i] = arr_item;
+    for (int i = 0; i < m; i++) {
+        matrix[i].resize(n);
+
+        string matrix_row_temp_temp;
+        getline(cin, matrix_row_temp_temp);
+
+        vector<string> matrix_row_temp = split(rtrim(matrix_row_temp_temp));
+
+        for (int j = 0; j < n; j++) {
+            int matrix_row_item = stoi(matrix_row_temp[j]);
+
+            matrix[i][j] = matrix_row_item;
+        }
     }
 
-    almostSorted(arr);
+    matrixRotation(matrix, r);
 
     return 0;
 }
