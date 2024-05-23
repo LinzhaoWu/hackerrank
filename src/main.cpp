@@ -33,12 +33,61 @@ vector<string> split(const string &);
 void matrixRotation(vector<vector<int>> matrix, int r) {
     const int n = matrix.front().size();
     const int m = matrix.size();
-    const int iMaxLists = min(m, n) / 2 + min(m, n) % 2;
+    const int iMaxLists = (min(m, n) + 1) / 2;
+    auto mtxOutput = matrix;
 
-    vector<list<int, int>> vLists(iMaxLists);
+    vector<list<pair<int, int>>> vLists(iMaxLists);
     for (int iList(0); iList < iMaxLists; iList++) {
         auto& curList = vLists[iList];
-        curList.push_back()
+        for (int i = n - 2 - iList; i >= iList; i--) {
+            curList.push_back({iList, i});
+        }
+        for (int i = 1 + iList; i <= m - 1 - iList; i++) {
+            curList.push_back({i, iList});
+        }
+        for (int i = 1 + iList; i <= n - 1 - iList; i++) {
+            curList.push_back({m - 1 - iList, i});
+        }
+        for (int i = m - 2 - iList; i >= iList; i--) {
+            curList.push_back({i, n - 1 - iList});
+        }
+    }
+
+    for (int iList(0); iList < iMaxLists; iList++) {
+        auto& cur = vLists[iList];
+        const int32_t steps = -(r % cur.size());
+
+        auto it = cur.end();
+        advance(it, steps);
+
+        remove_reference<decltype(cur)>::type cutList;
+        cutList.splice(cutList.begin(), cur, it, cur.end());
+        cur.splice(cur.begin(), cutList);
+    }
+
+    for (int iList(0); iList < iMaxLists; iList++) {
+        auto& curList = vLists[iList];
+        auto it = curList.begin();
+
+        for (int i = n - 2 - iList; i >= iList; i--, it++) {
+            mtxOutput[iList][i] = matrix[it->first][it->second];
+        }
+        for (int i = 1 + iList; i <= m - 1 - iList; i++, it++) {
+            mtxOutput[i][iList] = matrix[it->first][it->second];
+        }
+        for (int i = 1 + iList; i <= n - 1 - iList; i++, it++) {
+            mtxOutput[m - 1 - iList][i] = matrix[it->first][it->second];
+        }
+        for (int i = m - 2 - iList; i >= iList; i--, it++) {
+            mtxOutput[i][n - 1 - iList] = matrix[it->first][it->second];
+        }
+    }
+
+    for (int i(0); i < mtxOutput.size(); i++) {
+        for (int j(0); j < mtxOutput.front().size(); j++) {
+            cout << mtxOutput[i][j] << " ";
+        }
+        cout << "\r\n";
     }
 }
 
