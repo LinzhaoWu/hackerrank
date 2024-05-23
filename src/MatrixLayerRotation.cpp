@@ -54,15 +54,15 @@ void matrixRotation(vector<vector<int>> matrix, int r) {
     }
 
     for (int iList(0); iList < iMaxLists; iList++) {
-        auto& cur = vLists[iList];
-        const int32_t steps = -(r % cur.size());
+        auto& curList = vLists[iList];
+        const int32_t steps = -(r % curList.size());
 
-        auto it = cur.end();
+        auto it = curList.end();
         advance(it, steps);
 
-        remove_reference<decltype(cur)>::type cutList;
-        cutList.splice(cutList.begin(), cur, it, cur.end());
-        cur.splice(cur.begin(), cutList);
+        remove_reference<decltype(curList)>::type cut;
+        cut.splice(cut.begin(), curList, it, curList.end());
+        curList.splice(curList.begin(), cut);
     }
 
     for (int iList(0); iList < iMaxLists; iList++) {
@@ -83,8 +83,8 @@ void matrixRotation(vector<vector<int>> matrix, int r) {
         }
     }
 
-    for (int i(0); i < mtxOutput.size(); i++) {
-        for (int j(0); j < mtxOutput.front().size(); j++) {
+    for (int i(0); i < m; i++) {
+        for (int j(0); j < n; j++) {
             cout << mtxOutput[i][j] << " ";
         }
         cout << "\r\n";
