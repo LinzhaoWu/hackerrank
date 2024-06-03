@@ -20,108 +20,64 @@ using namespace std;
 
 string ltrim(const string &);
 string rtrim(const string &);
-vector<string> split(const string &);
 
 /*
- * Complete the 'matrixRotation' function below.
+ * Complete the 'sherlockAndAnagrams' function below.
  *
- * The function accepts following parameters:
- *  1. 2D_INTEGER_ARRAY matrix
- *  2. INTEGER r
+ * The function is expected to return an INTEGER.
+ * The function accepts STRING s as parameter.
  */
 
-void matrixRotation(vector<vector<int>> matrix, int r) {
-    const int n = matrix.front().size();
-    const int m = matrix.size();
-    const int iMaxLists = (min(m, n) + 1) / 2;
-    auto mtxOutput = matrix;
+int sherlockAndAnagrams(string s) {
+    using CharArray = vector<uint8_t>;
+    size_t ret(0);
 
-    vector<list<pair<int, int>>> vLists(iMaxLists);
-    for (int iList(0); iList < iMaxLists; iList++) {
-        auto& curList = vLists[iList];
-        for (int i = n - 2 - iList; i >= iList; i--) {
-            curList.push_back({iList, i});
+    auto hash = [](const CharArray& arr){
+        size_t ret = 0;
+        for (const auto& e: arr) {
+            ret ^= e;
         }
-        for (int i = 1 + iList; i <= m - 1 - iList; i++) {
-            curList.push_back({i, iList});
+        return std::hash<size_t>{}(ret);
+    };
+
+    auto cmp = [](const CharArray& arr1, const CharArray& arr2){
+        for (size_t i(0); i < arr1.size(); i++) {
+            if (arr1[i] != arr2[i]) return false;
         }
-        for (int i = 1 + iList; i <= n - 1 - iList; i++) {
-            curList.push_back({m - 1 - iList, i});
+        return true;
+    };
+
+    for (size_t sz(1); sz < s.size(); sz++) {
+        unordered_map<CharArray, size_t, decltype(hash), decltype(cmp)> mp;
+        for (size_t l(0); l < s.size() - sz; l++) {
+            CharArray arr(26);
+            for (size_t r(l); r < l + sz; r++) {
+                arr[s[r] - 'a']++;
+            }
+            mp[arr]++;
         }
-        for (int i = m - 2 - iList; i >= iList; i--) {
-            curList.push_back({i, n - 1 - iList});
+        for (const auto& [_, n] : mp) {
+            if (n >= 2) ret += (n * n - 1) / 2;
         }
     }
-
-    for (int iList(0); iList < iMaxLists; iList++) {
-        auto& cur = vLists[iList];
-        const int32_t steps = -(r % cur.size());
-
-        auto it = cur.end();
-        advance(it, steps);
-
-        remove_reference<decltype(cur)>::type cutList;
-        cutList.splice(cutList.begin(), cur, it, cur.end());
-        cur.splice(cur.begin(), cutList);
-    }
-
-    for (int iList(0); iList < iMaxLists; iList++) {
-        auto& curList = vLists[iList];
-        auto it = curList.begin();
-
-        for (int i = n - 2 - iList; i >= iList; i--, it++) {
-            mtxOutput[iList][i] = matrix[it->first][it->second];
-        }
-        for (int i = 1 + iList; i <= m - 1 - iList; i++, it++) {
-            mtxOutput[i][iList] = matrix[it->first][it->second];
-        }
-        for (int i = 1 + iList; i <= n - 1 - iList; i++, it++) {
-            mtxOutput[m - 1 - iList][i] = matrix[it->first][it->second];
-        }
-        for (int i = m - 2 - iList; i >= iList; i--, it++) {
-            mtxOutput[i][n - 1 - iList] = matrix[it->first][it->second];
-        }
-    }
-
-    for (int i(0); i < mtxOutput.size(); i++) {
-        for (int j(0); j < mtxOutput.front().size(); j++) {
-            cout << mtxOutput[i][j] << " ";
-        }
-        cout << "\r\n";
-    }
+    return ret;
 }
 
 int main()
 {
-    string first_multiple_input_temp;
-    getline(cin, first_multiple_input_temp);
+    string q_temp;
+    getline(cin, q_temp);
 
-    vector<string> first_multiple_input = split(rtrim(first_multiple_input_temp));
+    int q = stoi(ltrim(rtrim(q_temp)));
 
-    int m = stoi(first_multiple_input[0]);
+    for (int q_itr = 0; q_itr < q; q_itr++) {
+        string s;
+        getline(cin, s);
 
-    int n = stoi(first_multiple_input[1]);
+        int result = sherlockAndAnagrams(s);
 
-    int r = stoi(first_multiple_input[2]);
-
-    vector<vector<int>> matrix(m);
-
-    for (int i = 0; i < m; i++) {
-        matrix[i].resize(n);
-
-        string matrix_row_temp_temp;
-        getline(cin, matrix_row_temp_temp);
-
-        vector<string> matrix_row_temp = split(rtrim(matrix_row_temp_temp));
-
-        for (int j = 0; j < n; j++) {
-            int matrix_row_item = stoi(matrix_row_temp[j]);
-
-            matrix[i][j] = matrix_row_item;
-        }
+        cout << result << "\n";
     }
-
-    matrixRotation(matrix, r);
 
     return 0;
 }
@@ -136,21 +92,4 @@ string rtrim(const string &str) {
     string s(str);
 
     return s;
-}
-
-vector<string> split(const string &str) {
-    vector<string> tokens;
-
-    string::size_type start = 0;
-    string::size_type end = 0;
-
-    while ((end = str.find(" ", start)) != string::npos) {
-        tokens.push_back(str.substr(start, end - start));
-
-        start = end + 1;
-    }
-
-    tokens.push_back(str.substr(start));
-
-    return tokens;
 }
