@@ -27,9 +27,53 @@ using namespace std;
  *  1. STRING s1
  *  2. STRING s2
  */
-
+// #define OTHERS
 int commonChild(string s1, string s2) {
-
+#ifdef OTHERS
+    int m = s1.length();
+    int n = s2.length();
+    
+    vector<int> curr(n+1,0), prev(n+1,0);
+    
+    for(int i=1;i<=m;++i)
+    {
+        cout<< s1[i-1] << "\r\n";
+        for(int j=1;j<=n;++j)
+        {
+            auto& a = s1[i-1];
+            auto& b = s2[j-1];
+            if(a == b)
+                curr[j] = 1 + prev[j-1];
+            else
+                curr[j] = max(curr[j-1],prev[j]);
+        }
+        cout<< "curr " << curr[0] << " " << curr[1]<< " " << curr[2]<< " " << curr[3]<< " " << curr[4]<< " " << curr[5]<< " " << curr[6]<< "\r\n";
+        cout<< "prev " << prev[0] << " " << prev[1]<< " " << prev[2]<< " " << prev[3]<< " " << prev[4]<< " " << prev[5]<< " " << prev[6]<< "\r\n";
+        prev = curr;
+    }
+    return curr[n];
+#else
+    int m = s1.length();
+    int n = s2.length();
+    
+    vector<int> curr(n+1,0);
+    
+    for(int i=1;i<=m;++i)
+    {
+        cout<< s1[i-1] << "\r\n";
+        for(int j=1;j<=n;++j)
+        {
+            auto& a = s1[i-1];
+            auto& b = s2[j-1];
+            if(a == b)
+                curr[j] = 1 + curr[j-1];
+            else
+                curr[j] = max(curr[j-1],curr[j]);
+        }
+        cout<< "curr " << curr[0] << " " << curr[1]<< " " << curr[2]<< " " << curr[3]<< " " << curr[4]<< " " << curr[5]<< " " << curr[6] << " " << curr[7]<< "\r\n";
+    }
+    return curr[n];
+#endif
 }
 
 int main()
