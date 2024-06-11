@@ -19,74 +19,67 @@
 
 using namespace std;
 
+string ltrim(const string &);
+string rtrim(const string &);
+
 /*
- * Complete the 'commonChild' function below.
+ * Complete the 'steadyGene' function below.
  *
  * The function is expected to return an INTEGER.
- * The function accepts following parameters:
- *  1. STRING s1
- *  2. STRING s2
+ * The function accepts STRING gene as parameter.
  */
-// #define OTHERS
-int commonChild(string s1, string s2) {
-#ifdef OTHERS
-    int m = s1.length();
-    int n = s2.length();
-    
-    vector<int> curr(n+1,0), prev(n+1,0);
-    
-    for(int i=1;i<=m;++i)
-    {
-        cout<< s1[i-1] << "\r\n";
-        for(int j=1;j<=n;++j)
-        {
-            auto& a = s1[i-1];
-            auto& b = s2[j-1];
-            if(a == b)
-                curr[j] = 1 + prev[j-1];
-            else
-                curr[j] = max(curr[j-1],prev[j]);
-        }
-        cout<< "curr " << curr[0] << " " << curr[1]<< " " << curr[2]<< " " << curr[3]<< " " << curr[4]<< " " << curr[5]<< " " << curr[6]<< "\r\n";
-        cout<< "prev " << prev[0] << " " << prev[1]<< " " << prev[2]<< " " << prev[3]<< " " << prev[4]<< " " << prev[5]<< " " << prev[6]<< "\r\n";
-        prev = curr;
+
+int steadyGene(string gene) {
+    map<char, uint32_t> mp;
+    for (const auto& c : gene) {
+        mp[c]++;
     }
-    return curr[n];
-#else
-    int m = s1.length();
-    int n = s2.length();
-    
-    vector<int> curr(n+1,0);
-    
-    for(int i=1;i<=m;++i)
-    {
-        cout<< s1[i-1] << "\r\n";
-        for(int j=1;j<=n;++j)
-        {
-            auto& a = s1[i-1];
-            auto& b = s2[j-1];
-            if(a == b)
-                curr[j] = 1 + curr[j-1];
-            else
-                curr[j] = max(curr[j-1],curr[j]);
-        }
-        cout<< "curr " << curr[0] << " " << curr[1]<< " " << curr[2]<< " " << curr[3]<< " " << curr[4]<< " " << curr[5]<< " " << curr[6] << " " << curr[7]<< "\r\n";
+
+    const size_t uBalance = gene.size() / 4;
+    int iL(0);
+    int iR(gene.size() - 1);
+    while (iL < gene.size()) {
+        auto& c = gene[iL];
+        if (mp[c] < uBalance) {
+            mp[c]++;
+            iL++;
+        } else break;
     }
-    return curr[n];
-#endif
+    while (iR >= 0)
+    {
+        auto& c = gene[iR];
+        if (mp[c] < uBalance) {
+            mp[]
+        }
+    }
+    
 }
 
 int main()
 {
-    string s1;
-    getline(cin, s1);
+    string n_temp;
+    getline(cin, n_temp);
 
-    string s2;
-    getline(cin, s2);
+    int n = stoi(ltrim(rtrim(n_temp)));
 
-    int result = commonChild(s1, s2);
+    string gene;
+    getline(cin, gene);
+
+    int result = steadyGene(gene);
 
     cout << result << "\n";
 
     return 0;
+}
+
+string ltrim(const string &str) {
+    string s(str);
+
+    return s;
+}
+
+string rtrim(const string &str) {
+    string s(str);
+
+    return s;
 }
