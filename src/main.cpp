@@ -25,9 +25,93 @@ string rtrim(const string &);
 vector<string> split(const string &);
 
 
-#define OTHERS
+#define OTHERS_1
 
-#ifdef OTHERS
+#ifdef OTHERS_1
+int main() {
+    int ngenes, ndna;
+    string tmp;
+
+    cin >> ngenes;
+    struct sHealth {
+        int    index;
+        int    val;
+    };
+    struct sGene {
+        string            seq;
+        vector<sHealth>    health;
+        sGene() = default;
+        sGene(const string &s) : seq{s} {}
+    };
+    struct sLut { int gi; int v[26]; };
+    vector<sGene> genes {{""}};
+    vector<sLut> lut(26);
+
+    {
+        vector<int> ndx(ngenes);
+        unordered_map<string,int> map;
+
+        for (int i=0; i<ngenes; i++) {
+            cin >> tmp;
+            auto t = map.emplace(tmp, genes.size());
+            if (t.second) genes.emplace_back(tmp);
+            ndx[i] = t.first->second;
+
+            sLut *L = &lut[tmp[0]-97];
+            for (int j=1, l=tmp.length(); ; j++) {
+                if (j == l) { L->gi = ndx[i]; break; }
+                int ch = tmp[j]-97;
+                if (L->v[ch]) L = &lut[L->v[ch]]; else {
+                    L->v[ch] = lut.size();
+                    lut.emplace_back();
+                    L = &lut.back();
+                }
+            }
+        }
+
+        for (int i=0, h; i<ngenes; i++) {
+            cin >> h;
+            genes[ndx[i]].health.push_back({i, h});
+        }
+    }
+
+    cin >> ndna;
+    int64_t hsum=0, htop=0, hlow=INT64_MAX;
+
+    for (int i=0, first, last; i<ndna; i++) {
+        string dna;
+        cin >> first >> last >> dna;
+
+        for (int p=hsum=0, e=dna.length(), j, n; p<e; p++) {
+            sLut *L = &lut[dna[p]-97];
+            for (j=p;;) {
+                if (L->gi) {
+                    const auto &G = genes[L->gi];
+                    int l=0, s=G.health.size(), r=s, m;
+                    do {
+                        m = l + ((r-l) >> 1);
+                        const auto &H = G.health[m];
+                        if (first > H.index) { l=m+1; continue; }
+                        if (first < H.index && m && first <= G.health[m-1].index) { r=m; continue; }
+                        while (m < s && G.health[m].index <= last) hsum += G.health[m++].val;
+                        break;
+                    } while (r!=l);
+                }
+
+                if (++j >= e) break;
+                n = L->v[dna[j]-97];
+                if (n) L = &lut[n]; else break;
+            }
+        }
+        htop = max(htop, hsum);
+        hlow = min(hlow, hsum);
+    }
+    cout << hlow << " " << htop << "\n";
+    
+    return 0;
+}
+
+#elif defined OTHERS_2
 class TrieNode {
   public:
     unordered_map<char, TrieNode*> children = {};
